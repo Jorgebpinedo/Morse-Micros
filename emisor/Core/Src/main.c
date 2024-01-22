@@ -477,7 +477,6 @@ int main(void)
 	  			 start_led = 1;
 	  			 HAL_UART_Receive_IT(&huart1, (uint8_t *)frase_recv, 1);
 	  			 memset(frase_recv, 0, sizeof(frase_recv));
-
   }
 	  transmitirLedMorse(frase_recv_m, &start_led);
   }

@@ -76,6 +76,9 @@ enum estado estado_act, estado_sig;
 
 char cact[5] = "", csig[5] = "****"; //Secuencias de . -
 volatile char pact[10] = ""; //Secuencias de caracteres
+volatile char pr1[10] ="";
+volatile char pr2[10] ="";
+volatile char pr3[10] ="";
 char psig[10] = "*********"; //Secuencias de caracteres
 
 uint32_t pos_csig = 0, pos_psig = 0;
@@ -87,6 +90,9 @@ volatile char frase_recv_m[256] = "";
 
 volatile uint8_t mensaje_completo = 0;
 
+///Mi codigo
+int row = 1;
+//(
 
 void eliminarAsteriscos(char* orig){
 	int len = strlen(orig);
@@ -239,16 +245,55 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  tact = HAL_GetTick();
-	  uint8_t y = 0;
-	 ssd1306_Fill(Black);
-	 #ifdef SSD1306_INCLUDE_FONT_16x26
-	 ssd1306_SetCursor(2, y);
-	 ssd1306_WriteString(pact, Font_16x26, White);
-	 #endif
-	 ssd1306_UpdateScreen();
-
-
+	  ssd1306_Fill(Black);
+	if(row == 1)
+		{
+		strcpy(pr1, pact);
+			#ifdef SSD1306_INCLUDE_FONT_16x26
+			uint8_t y = 0;
+			ssd1306_SetCursor(2, y);
+			ssd1306_WriteString(pr1, Font_16x26, White);
+			#endif
+		}
+	else if(row == 2)
+		{
+		strcpy(pr2, pact);
+			#ifdef SSD1306_INCLUDE_FONT_16x26
+			uint8_t y = 40;
+			ssd1306_SetCursor(2, y);
+			ssd1306_WriteString(pr2, Font_16x26, White);
+			#endif
+		}
+	else if(row == 3)
+			{
+			strcpy(pr3, pact);
+				#ifdef SSD1306_INCLUDE_FONT_16x26
+				uint8_t y = 90;
+				ssd1306_SetCursor(2, y);
+				ssd1306_WriteString(pr3, Font_16x26, White);
+				#endif
+			}
+	else{
+		row = 0;
+		#ifdef SSD1306_INCLUDE_FONT_16x26
+		#endif
+		ssd1306_UpdateScreen();
+		//CONTROL RECEPCION COMPLETADA
+		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_7,0);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6,1);
+		HAL_Delay(3000);
+	}
+	 /* Codigo Bueno
+	 uint8_t y = 0;
+		 ssd1306_Fill(Black);
+		 #ifdef SSD1306_INCLUDE_FONT_16x26
+		 ssd1306_SetCursor(2, y);
+		 ssd1306_WriteString(pact, Font_16x26, White);
+		 #endif
+		 ssd1306_UpdateScreen();
+		 */
+	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_7,1); //LED de confrimacion de mensaje transmitiendose
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6,0);//LED de confirmacion de mensaje recibido
 
 	  	  HAL_ADC_Start(&hadc1);
 	  	  if(HAL_ADC_PollForConversion(&hadc1, 1000)==HAL_OK){
@@ -369,6 +414,7 @@ int main(void)
 
 	  		  eliminarAsteriscos(pact);
 	  	  }
+	  	  row++;
   }
   /* USER CODE END 3 */
 }
@@ -512,12 +558,24 @@ static void MX_I2C1_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PC6 PC7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
